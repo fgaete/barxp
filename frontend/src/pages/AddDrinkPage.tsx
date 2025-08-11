@@ -19,18 +19,94 @@ const AddDrinkPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showCustomDrink, setShowCustomDrink] = useState(false);
   
-  // Usar datos reales - TODO: Obtener de la API
+  // Categorías de bebidas con conteos actualizados
   const drinkCategories = [
-    { id: 'all', name: 'Todos', count: 150 },
-    { id: 'beer', name: 'Cerveza', count: 45 },
-    { id: 'wine', name: 'Vino', count: 30 },
-    { id: 'cocktail', name: 'Cóctel', count: 25 },
-    { id: 'whiskey', name: 'Whiskey', count: 20 },
-    { id: 'vodka', name: 'Vodka', count: 15 },
-    { id: 'rum', name: 'Ron', count: 15 }
-  ]; // TODO: Obtener categorías desde la API
+    { id: 'all', name: 'Todos', count: 58 },
+    { id: 'beer', name: 'Cervezas', count: 10 },
+    { id: 'wine', name: 'Vinos', count: 8 },
+    { id: 'cocktail', name: 'Cócteles', count: 39 },
+    { id: 'whiskey', name: 'Whiskeys', count: 5 },
+    { id: 'vodka', name: 'Vodkas', count: 3 },
+    { id: 'rum', name: 'Rones', count: 2 },
+    { id: 'other', name: 'Otros', count: 1 }
+  ];
 
-  const popularDrinks: Drink[] = []; // TODO: Obtener bebidas populares desde la API
+  // Base de datos expandida de bebidas alcohólicas populares en Chile
+  const popularDrinks: Drink[] = [
+    // Cervezas
+    { id: 1, name: 'Cristal', category: 'beer', alcoholContent: 4.6, xpReward: 10, difficulty: 'Fácil', image: '🍺', description: 'Cerveza lager chilena clásica' },
+    { id: 2, name: 'Escudo', category: 'beer', alcoholContent: 4.8, xpReward: 10, difficulty: 'Fácil', image: '🍺', description: 'Cerveza premium chilena' },
+    { id: 3, name: 'Brahma', category: 'beer', alcoholContent: 4.3, xpReward: 10, difficulty: 'Fácil', image: '🍺', description: 'Cerveza brasileña popular en Chile' },
+    { id: 4, name: 'Heineken', category: 'beer', alcoholContent: 5.0, xpReward: 12, difficulty: 'Fácil', image: '🍺', description: 'Cerveza holandesa premium' },
+    { id: 5, name: 'Corona', category: 'beer', alcoholContent: 4.5, xpReward: 12, difficulty: 'Fácil', image: '🍺', description: 'Cerveza mexicana con limón' },
+    { id: 6, name: 'Stella Artois', category: 'beer', alcoholContent: 5.2, xpReward: 15, difficulty: 'Fácil', image: '🍺', description: 'Cerveza belga elegante' },
+    { id: 7, name: 'Budweiser', category: 'beer', alcoholContent: 5.0, xpReward: 12, difficulty: 'Fácil', image: '🍺', description: 'Cerveza americana clásica' },
+    { id: 8, name: 'Kunstmann', category: 'beer', alcoholContent: 5.0, xpReward: 15, difficulty: 'Fácil', image: '🍺', description: 'Cerveza artesanal chilena' },
+    
+    // Vinos
+    { id: 9, name: 'Cabernet Sauvignon', category: 'wine', alcoholContent: 13.5, xpReward: 20, difficulty: 'Medio', image: '🍷', description: 'Vino tinto chileno clásico' },
+    { id: 10, name: 'Carmenère', category: 'wine', alcoholContent: 14.0, xpReward: 25, difficulty: 'Medio', image: '🍷', description: 'Cepa emblemática de Chile' },
+    { id: 11, name: 'Sauvignon Blanc', category: 'wine', alcoholContent: 12.5, xpReward: 18, difficulty: 'Medio', image: '🥂', description: 'Vino blanco fresco y aromático' },
+    { id: 12, name: 'Chardonnay', category: 'wine', alcoholContent: 13.0, xpReward: 20, difficulty: 'Medio', image: '🥂', description: 'Vino blanco elegante' },
+    { id: 13, name: 'Merlot', category: 'wine', alcoholContent: 13.5, xpReward: 20, difficulty: 'Medio', image: '🍷', description: 'Vino tinto suave y afrutado' },
+    { id: 14, name: 'Pinot Noir', category: 'wine', alcoholContent: 12.5, xpReward: 22, difficulty: 'Medio', image: '🍷', description: 'Vino tinto delicado' },
+    { id: 15, name: 'Syrah', category: 'wine', alcoholContent: 14.5, xpReward: 25, difficulty: 'Medio', image: '🍷', description: 'Vino tinto intenso y especiado' },
+    
+    // Whiskey
+    { id: 16, name: 'Johnnie Walker Red', category: 'whiskey', alcoholContent: 40.0, xpReward: 30, difficulty: 'Medio', image: '🥃', description: 'Whisky escocés blend' },
+    { id: 17, name: 'Johnnie Walker Black', category: 'whiskey', alcoholContent: 40.0, xpReward: 40, difficulty: 'Difícil', image: '🥃', description: 'Whisky escocés premium' },
+    { id: 18, name: 'Chivas Regal', category: 'whiskey', alcoholContent: 40.0, xpReward: 45, difficulty: 'Difícil', image: '🥃', description: 'Whisky escocés de lujo' },
+    { id: 19, name: 'Jack Daniels', category: 'whiskey', alcoholContent: 40.0, xpReward: 35, difficulty: 'Medio', image: '🥃', description: 'Whiskey americano Tennessee' },
+    { id: 20, name: 'Jameson', category: 'whiskey', alcoholContent: 40.0, xpReward: 35, difficulty: 'Medio', image: '🥃', description: 'Whiskey irlandés suave' },
+    
+    // Vodka
+    { id: 21, name: 'Smirnoff', category: 'vodka', alcoholContent: 40.0, xpReward: 25, difficulty: 'Medio', image: '🍸', description: 'Vodka ruso clásico' },
+    { id: 22, name: 'Absolut', category: 'vodka', alcoholContent: 40.0, xpReward: 30, difficulty: 'Medio', image: '🍸', description: 'Vodka sueco premium' },
+    { id: 23, name: 'Grey Goose', category: 'vodka', alcoholContent: 40.0, xpReward: 50, difficulty: 'Difícil', image: '🍸', description: 'Vodka francés ultra premium' },
+    { id: 24, name: 'Stolichnaya', category: 'vodka', alcoholContent: 40.0, xpReward: 30, difficulty: 'Medio', image: '🍸', description: 'Vodka ruso tradicional' },
+    
+    // Ron
+    { id: 25, name: 'Bacardi', category: 'rum', alcoholContent: 40.0, xpReward: 25, difficulty: 'Medio', image: '🥃', description: 'Ron blanco caribeño' },
+    { id: 26, name: 'Captain Morgan', category: 'rum', alcoholContent: 35.0, xpReward: 20, difficulty: 'Fácil', image: '🥃', description: 'Ron especiado' },
+    { id: 27, name: 'Havana Club', category: 'rum', alcoholContent: 40.0, xpReward: 30, difficulty: 'Medio', image: '🥃', description: 'Ron cubano auténtico' },
+    { id: 28, name: 'Flor de Caña', category: 'rum', alcoholContent: 40.0, xpReward: 35, difficulty: 'Medio', image: '🥃', description: 'Ron nicaragüense premium' },
+    
+    // Cócteles populares
+    { id: 29, name: 'Pisco Sour', category: 'cocktail', alcoholContent: 20.0, xpReward: 40, difficulty: 'Medio', image: '🍸', description: 'Cóctel nacional de Chile y Perú' },
+    { id: 30, name: 'Mojito', category: 'cocktail', alcoholContent: 15.0, xpReward: 35, difficulty: 'Medio', image: '🌿', description: 'Cóctel cubano refrescante' },
+    { id: 31, name: 'Caipirinha', category: 'cocktail', alcoholContent: 18.0, xpReward: 30, difficulty: 'Fácil', image: '🍋', description: 'Cóctel brasileño con cachaça' },
+    { id: 32, name: 'Margarita', category: 'cocktail', alcoholContent: 22.0, xpReward: 35, difficulty: 'Medio', image: '🍹', description: 'Cóctel mexicano con tequila' },
+    { id: 33, name: 'Daiquiri', category: 'cocktail', alcoholContent: 20.0, xpReward: 40, difficulty: 'Medio', image: '🍹', description: 'Cóctel clásico con ron' },
+    { id: 34, name: 'Piña Colada', category: 'cocktail', alcoholContent: 12.0, xpReward: 25, difficulty: 'Fácil', image: '🥥', description: 'Cóctel tropical cremoso' },
+    { id: 35, name: 'Cosmopolitan', category: 'cocktail', alcoholContent: 18.0, xpReward: 45, difficulty: 'Difícil', image: '🍸', description: 'Cóctel elegante con vodka' },
+    
+    // Bebidas adicionales populares en Chile
+    { id: 36, name: 'Pisco', category: 'other', alcoholContent: 40.0, xpReward: 35, difficulty: 'Medio', image: '🍾', description: 'Destilado de uva chileno' },
+    { id: 37, name: 'Terremoto', category: 'cocktail', alcoholContent: 25.0, xpReward: 50, difficulty: 'Difícil', image: '🌋', description: 'Cóctel chileno tradicional' },
+    { id: 38, name: 'Chicha', category: 'other', alcoholContent: 12.0, xpReward: 15, difficulty: 'Fácil', image: '🌽', description: 'Bebida fermentada tradicional' },
+    { id: 39, name: 'Gin Tonic', category: 'cocktail', alcoholContent: 15.0, xpReward: 25, difficulty: 'Fácil', image: '🍸', description: 'Cóctel clásico británico' },
+    { id: 40, name: 'Whiskey Sour', category: 'cocktail', alcoholContent: 20.0, xpReward: 40, difficulty: 'Medio', image: '🥃', description: 'Cóctel ácido con whiskey' },
+    { id: 41, name: 'Negroni', category: 'cocktail', alcoholContent: 24.0, xpReward: 45, difficulty: 'Difícil', image: '🍸', description: 'Cóctel italiano amargo' },
+    { id: 42, name: 'Old Fashioned', category: 'cocktail', alcoholContent: 35.0, xpReward: 50, difficulty: 'Difícil', image: '🥃', description: 'Cóctel clásico americano' },
+    { id: 43, name: 'Manhattan', category: 'cocktail', alcoholContent: 30.0, xpReward: 45, difficulty: 'Difícil', image: '🥃', description: 'Cóctel elegante con whiskey' },
+    { id: 44, name: 'Aperol Spritz', category: 'cocktail', alcoholContent: 11.0, xpReward: 20, difficulty: 'Fácil', image: '🥂', description: 'Aperitivo italiano refrescante' },
+    { id: 45, name: 'Bloody Mary', category: 'cocktail', alcoholContent: 15.0, xpReward: 30, difficulty: 'Medio', image: '🍅', description: 'Cóctel con vodka y tomate' },
+    { id: 46, name: 'Espresso Martini', category: 'cocktail', alcoholContent: 20.0, xpReward: 40, difficulty: 'Difícil', image: '☕', description: 'Cóctel con café y vodka' },
+    { id: 47, name: 'Tequila Sunrise', category: 'cocktail', alcoholContent: 18.0, xpReward: 30, difficulty: 'Medio', image: '🌅', description: 'Cóctel colorido mexicano' },
+    { id: 48, name: 'Long Island', category: 'cocktail', alcoholContent: 28.0, xpReward: 60, difficulty: 'Difícil', image: '🍹', description: 'Cóctel fuerte con múltiples licores' },
+    { id: 49, name: 'Sex on the Beach', category: 'cocktail', alcoholContent: 16.0, xpReward: 25, difficulty: 'Fácil', image: '🏖️', description: 'Cóctel tropical afrutado' },
+    { id: 50, name: 'Blue Lagoon', category: 'cocktail', alcoholContent: 18.0, xpReward: 35, difficulty: 'Medio', image: '💙', description: 'Cóctel azul tropical' },
+    
+    // Nuevos tragos populares agregados
+    { id: 51, name: 'Piscola', category: 'cocktail', alcoholContent: 12.0, xpReward: 20, difficulty: 'Fácil', image: '🥤', description: 'Pisco con Coca-Cola, muy popular en Chile' },
+    { id: 52, name: 'Cuba Libre', category: 'cocktail', alcoholContent: 14.0, xpReward: 25, difficulty: 'Fácil', image: '🥤', description: 'Ron con Coca-Cola y limón' },
+    { id: 53, name: 'Tropical Gin', category: 'cocktail', alcoholContent: 16.0, xpReward: 30, difficulty: 'Medio', image: '🌺', description: 'Gin con frutas tropicales' },
+    { id: 54, name: 'Fernet con Cola', category: 'cocktail', alcoholContent: 18.0, xpReward: 25, difficulty: 'Fácil', image: '🥤', description: 'Fernet Branca con Coca-Cola' },
+    { id: 55, name: 'Jote', category: 'cocktail', alcoholContent: 15.0, xpReward: 30, difficulty: 'Medio', image: '🍷', description: 'Vino tinto con Coca-Cola' },
+    { id: 56, name: 'Borgoña', category: 'cocktail', alcoholContent: 16.0, xpReward: 35, difficulty: 'Medio', image: '🍓', description: 'Vino tinto con frutillas' },
+    { id: 57, name: 'Clery', category: 'cocktail', alcoholContent: 14.0, xpReward: 25, difficulty: 'Fácil', image: '🍓', description: 'Vino blanco con frutillas' },
+    { id: 58, name: 'Navegado', category: 'cocktail', alcoholContent: 20.0, xpReward: 40, difficulty: 'Medio', image: '🍊', description: 'Vino caliente especiado navideño' }
+  ];
 
   const filteredDrinks = popularDrinks.filter(drink => {
     const matchesSearch = drink.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

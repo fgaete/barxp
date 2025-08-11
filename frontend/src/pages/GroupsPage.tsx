@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Users, Plus, Trophy, Calendar, Crown, Star, UserPlus } from 'lucide-react';
+import { Users, Plus, Trophy, Calendar, Crown, Star, UserPlus, X, Mail, Send } from 'lucide-react';
 import { calculateLevelInfo } from '../utils/levelSystem';
 
 interface GroupMember {
@@ -38,20 +38,112 @@ interface UserGroup {
 
 const GroupsPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
-  
-  // Usar datos reales - TODO: Obtener de la API
-  const userGroups: UserGroup[] = []; // TODO: Obtener grupos del usuario desde la API
+  const [userGroups, setUserGroups] = useState<UserGroup[]>([]); // Estado local para grupos
 
   const handleCreateGroup = () => {
-    if (newGroupName.trim()) {
-      // Aquí se haría la llamada a la API
-      console.log('Crear grupo:', { name: newGroupName, description: newGroupDescription });
+    if (newGroupName.trim() && currentUser) {
+      // Crear nuevo grupo con el usuario actual como owner
+      const newGroup: UserGroup = {
+        id: Date.now(), // ID temporal
+        name: newGroupName.trim(),
+        description: newGroupDescription.trim() || 'Sin descripción',
+        memberCount: 1,
+        isOwner: true,
+        members: [{
+           id: 1,
+           name: currentUser.displayName || 'Usuario',
+           level: 1,
+           xp: 0,
+           avatar: currentUser.photoURL || null,
+           isOwner: true
+         }],
+        recentActivity: [{
+          user: currentUser.displayName || 'Usuario',
+          action: 'creó el grupo',
+          time: 'hace unos segundos'
+        }],
+        upcomingEvents: []
+      };
+      
+      // Agregar el nuevo grupo a la lista
+      setUserGroups(prev => [...prev, newGroup]);
+      
+      // Limpiar formulario y cerrar modal
       setNewGroupName('');
       setNewGroupDescription('');
-      setShowCreateGroup(false);
+      setShowCreateModal(false);
+      
+      // TODO: En producción, hacer llamada a la API
+      console.log('Grupo creado:', newGroup);
+    }
+  };
+
+  const handleInviteMember = (groupId: number) => {
+    setSelectedGroupId(groupId);
+    const selectedGroup = userGroups.find(g => g.id === groupId);
+    setInviteMessage(
+      `🎯 ¡Desafío BarXP Activado! 🍻\n\n` +
+      `¡Hola! Te invito a unirte a nuestro grupo "${selectedGroup?.name}" en BarXP - la app que convierte cada trago en una aventura épica.\n\n` +
+      `🏆 ¿Estás listo para el reto?\n` +
+      `• Compite conmigo y otros ${selectedGroup?.memberCount || 0} miembros\n` +
+      `• Gana XP por cada trago que registres\n` +
+      `• Sube de nivel y desbloquea logros únicos\n` +
+      `• Demuestra quién es el verdadero maestro de la vida nocturna\n\n` +
+      `💪 Este no es solo un juego... es un estilo de vida.\n` +
+      `¿Tienes lo que se necesita para llegar a la cima del ranking?\n\n` +
+      `🔥 Acepta el desafío: ${window.location.origin}\n\n` +
+      `¡Nos vemos en la batalla! 🥂\n` +
+      `- ${currentUser?.displayName || 'Tu retador'}`
+    );
+    setShowInviteModal(true);
+  };
+
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim() || !inviteMessage.trim()) return;
+    
+    setIsInviting(true);
+    
+    try {
+      // Simular envío de correo (aquí se integraría con un servicio real como EmailJS)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Agregar actividad al grupo
+      const selectedGroup = userGroups.find(g => g.id === selectedGroupId);
+      if (selectedGroup) {
+        setUserGroups(prev => prev.map(group => 
+          group.id === selectedGroupId 
+            ? {
+                ...group,
+                recentActivity: [
+                  {
+                    user: currentUser?.displayName || 'Usuario',
+                    action: `invitó a ${inviteEmail}`,
+                    time: 'ahora'
+                  },
+                  ...group.recentActivity
+                ]
+              }
+            : group
+        ));
+      }
+      
+      alert('¡Invitación enviada con éxito! 🚀');
+      setInviteEmail('');
+      setInviteMessage('');
+      setShowInviteModal(false);
+      setSelectedGroupId(null);
+    } catch {
+       alert('Error al enviar la invitación. Inténtalo de nuevo.');
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -76,7 +168,7 @@ const GroupsPage: React.FC = () => {
             </div>
             
             <button
-              onClick={() => setShowCreateGroup(true)}
+              onClick={() => setShowCreateModal(true)}
               className="bg-primary-500 text-white p-3 rounded-full shadow-lg hover:bg-primary-600 transition-colors"
             >
               <Plus className="w-6 h-6" />
@@ -87,7 +179,7 @@ const GroupsPage: React.FC = () => {
 
       <div className="px-6 py-6 space-y-6">
         {/* Crear grupo modal */}
-        {showCreateGroup && (
+        {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl p-6 w-full max-w-md">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -124,7 +216,7 @@ const GroupsPage: React.FC = () => {
               
               <div className="flex space-x-3 mt-6">
                 <button
-                  onClick={() => setShowCreateGroup(false)}
+                  onClick={() => setShowCreateModal(false)}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Cancelar
@@ -152,7 +244,7 @@ const GroupsPage: React.FC = () => {
               Crea tu primer grupo o únete a uno existente
             </p>
             <button
-              onClick={() => setShowCreateGroup(true)}
+              onClick={() => setShowCreateModal(true)}
               className="btn-primary"
             >
               Crear Mi Primer Grupo
@@ -198,7 +290,10 @@ const GroupsPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      <button className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => handleInviteMember(group.id)}
+                        className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
+                      >
                         <UserPlus className="w-5 h-5" />
                       </button>
                     </div>
@@ -306,6 +401,83 @@ const GroupsPage: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Modal de invitación */}
+        {showInviteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Invitar Miembro
+                </h2>
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email del invitado
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="amigo@ejemplo.com"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mensaje de invitación
+                  </label>
+                  <textarea
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                    rows={8}
+                    placeholder="Escribe un mensaje personalizado..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                  disabled={isInviting}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSendInvite}
+                  disabled={!inviteEmail.trim() || !inviteMessage.trim() || isInviting}
+                  className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                >
+                  {isInviting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Enviando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Enviar Invitación</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
