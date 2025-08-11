@@ -1,0 +1,128 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, dev, qa ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run ESLint
+      run: |
+        cd frontend
+        npm run lint
+    
+    - name: Run TypeScript check
+      run: |
+        cd frontend
+        npx tsc --noEmit
+    
+    - name: Run unit tests with coverage
+      run: |
+        cd frontend
+        npm run test:coverage
+    
+    - name: Check build
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Comment PR with test results
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const { context } = require('@actions/github');
+          const jobStatus = '${{ job.status }}';
+          const emoji = jobStatus === 'success' ? '✅' : '❌';
+          
+          const comment = `${emoji} **Code Quality Check ${jobStatus === 'success' ? 'Passed' : 'Failed'}**
+          
+          - ESLint: ${jobStatus === 'success' ? '✅ Passed' : '❌ Failed'}
+          - TypeScript: ${jobStatus === 'success' ? '✅ Passed' : '❌ Failed'}
+          - Unit Tests: ${jobStatus === 'success' ? '✅ Passed' : '❌ Failed'}
+          - Build: ${jobStatus === 'success' ? '✅ Passed' : '❌ Failed'}
+          
+          ${jobStatus === 'success' ? '🚀 Ready for review!' : '🔧 Please fix the issues above before merging.'}`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run security audit
+      run: |
+        cd frontend
+        npm audit --audit-level=moderate
+    
+    - name: Check for outdated packages
+      run: |
+        cd frontend
+        npm outdated || true
+
+  branch-protection:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'main'
+    
+    steps:
+    - name: Check branch naming convention
+      run: |
+        BRANCH_NAME="${{ github.head_ref }}"
+        if [[ ! $BRANCH_NAME =~ ^(feature|bugfix|hotfix|chore)/.+ ]]; then
+          echo "❌ Branch name '$BRANCH_NAME' does not follow naming convention"
+          echo "Please use: feature/*, bugfix/*, hotfix/*, or chore/*"
+          exit 1
+        fi
+        echo "✅ Branch name follows convention"
+    
+    - name: Check PR title
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        if [[ ! $PR_TITLE =~ ^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?:.+ ]]; then
+          echo "❌ PR title '$PR_TITLE' does not follow conventional commits format"
+          echo "Please use: type(scope): description"
+          echo "Types: feat, fix, docs, style, refactor, test, chore"
+          exit 1
+        fi
+        echo "✅ PR title follows conventional commits format"
