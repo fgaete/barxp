@@ -1,11 +1,12 @@
-const CACHE_NAME = 'barxp-v1';
+const CACHE_NAME = 'barxp-v2';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-192x192.svg',
+  '/icons/icon-512x512.svg',
+  '/icons/icon-152x152.svg',
+  '/icons/icon-180x180.svg',
+  '/favicon.ico'
 ];
 
 // Install event - cache resources

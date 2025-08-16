@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Fondo circular -->
+  <circle cx="16" cy="16" r="16" fill="#1f2937"/>
+  
+  <!-- Copa de Manhattan -->
+  <g transform="translate(16, 16)">
+    <!-- Base de la copa -->
+    <rect x="-1" y="6" width="2" height="4" fill="#6b7280"/>
+    
+    <!-- Pie de la copa -->
+    <ellipse cx="0" cy="10" rx="3" ry="1" fill="#6b7280"/>
+    
+    <!-- Copa principal -->
+    <path d="M -4 6 L -4 -2 Q -4 -4 -2 -4 L 2 -4 Q 4 -4 4 -2 L 4 6 Z" fill="#f59e0b" opacity="0.8"/>
+    
+    <!-- Líquido -->
+    <path d="M -3.5 5.5 L -3.5 -1.5 Q -3.5 -3 -2.5 -3 L 2.5 -3 Q 3.5 -3 3.5 -1.5 L 3.5 5.5 Z" fill="#dc2626"/>
+    
+    <!-- Cereza -->
+    <circle cx="1" cy="-1" r="1.2" fill="#dc2626"/>
+    <circle cx="1" cy="-1" r="0.8" fill="#ef4444"/>
+    
+    <!-- Palito de la cereza -->
+    <line x1="1" y1="-2.2" x2="0.5" y2="-3.5" stroke="#22c55e" stroke-width="0.3"/>
+    
+    <!-- Brillo en la copa -->
+    <ellipse cx="-2" cy="-1" rx="0.8" ry="2" fill="#fbbf24" opacity="0.3"/>
+  </g>
+</svg>

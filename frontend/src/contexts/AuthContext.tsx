@@ -10,6 +10,7 @@ import {
 import { auth } from '../services/firebase.ts';
 import type { User } from '../types';
 import { AuthContext, type AuthContextType } from './auth';
+import { drinkService } from '../services/drinkService';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -55,6 +56,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else if (authError.code === 'auth/unauthorized-domain') {
         console.error('🚫 Dominio no autorizado:', window.location.origin);
         alert(`Dominio no autorizado: ${window.location.origin}. Verifica la configuración en Firebase Console.`);
+      } else if (authError.code === 'auth/operation-not-allowed') {
+        console.error('🚫 Operación no permitida - Google Auth no está habilitado correctamente');
+        alert('Error: Google Authentication no está habilitado en Firebase Console. Por favor, habilita Google como proveedor de autenticación.');
       } else {
         console.error('🔥 Error Firebase:', authError.code, authError.message);
         alert(`Error de autenticación: ${authError.message}`);
@@ -76,28 +80,54 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const createOrUpdateUser = async (firebaseUser: FirebaseUser) => {
-    // Crear un usuario nuevo con valores iniciales reales
-    const newUser: User = {
-      id: firebaseUser.uid,
-      email: firebaseUser.email || '',
-      displayName: firebaseUser.displayName || 'Usuario',
-      photoURL: firebaseUser.photoURL || undefined,
-      level: 1, // Nivel inicial
-      currentXP: 0, // XP inicial
-      totalXP: 0, // XP total inicial
-      xpToNextLevel: 100, // XP necesario para nivel 2
-      createdAt: new Date(),
-      lastLoginAt: new Date(),
-      preferences: {
-        notifications: true,
-        darkMode: false,
-        language: 'es',
-        units: 'metric'
-      }
-    };
-    // TODO: En producción, verificar si el usuario existe en la base de datos
-    // y obtener sus datos reales, o crear un nuevo registro si es la primera vez
-    setCurrentUser(newUser);
+    try {
+      // Crear un usuario nuevo con valores iniciales reales
+      const newUser: User = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        displayName: firebaseUser.displayName || 'Usuario',
+        photoURL: firebaseUser.photoURL || undefined,
+        level: 1, // Nivel inicial
+        currentXP: 0, // XP inicial
+        totalXP: 0, // XP total inicial
+        xpToNextLevel: 100, // XP necesario para nivel 2
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        preferences: {
+          notifications: true,
+          darkMode: false,
+          language: 'es',
+          units: 'metric'
+        }
+      };
+      
+      // Inicializar usuario en Firestore
+      await drinkService.initializeUser(newUser);
+      
+      setCurrentUser(newUser);
+    } catch (error) {
+      console.error('Error al crear/actualizar usuario:', error);
+      // Aún así establecer el usuario local para que la app funcione
+      const newUser: User = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        displayName: firebaseUser.displayName || 'Usuario',
+        photoURL: firebaseUser.photoURL || undefined,
+        level: 1,
+        currentXP: 0,
+        totalXP: 0,
+        xpToNextLevel: 100,
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        preferences: {
+          notifications: true,
+          darkMode: false,
+          language: 'es',
+          units: 'metric'
+        }
+      };
+      setCurrentUser(newUser);
+    }
   };
 
   useEffect(() => {

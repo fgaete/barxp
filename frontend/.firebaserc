@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "barxp-app",
+    "barxp": "barxp-81600"
+  },
+  "targets": {},
+  "etags": {}
+}
